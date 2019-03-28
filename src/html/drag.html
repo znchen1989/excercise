@@ -65,7 +65,7 @@
           }
         }
         document.addEventListener('mousemove', moveFn)
-        drag1.addEventListener('mouseup', function() {
+        var upFn = function() {
           drag1.style.cursor = 'default'
           if (dropValid) {
             drag1.parentNode.removeChild(drag1)
@@ -74,8 +74,10 @@
           }
           dropValid = false
           document.removeEventListener('mousemove', moveFn)
+          document.removeEventListener('mouseup', upFn)
           // drag1.removeEventListener('mousedown', mouseDownFn)
-        })
+        }
+        document.addEventListener('mouseup', upFn)
       })
     </script>
   </body>
