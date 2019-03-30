@@ -1,54 +1,69 @@
-var drag1 = document.getElementById('drag1')
-var drop1 = document.getElementById('drop1')
-var tagW = drag1.offsetWidth / 2
-var tagH = drag1.offsetHeight / 2
-console.log(2222)
-drag1.addEventListener('mousedown', function mouseDownFn(e) {
-  var startX = e.clientX
-  var startY = e.clientY
-  var disX = startX - drag1.offsetLeft
-  var disY = startY - drag1.offsetTop
-  var isCollide = false
-  var dropValid = false
-  var moveFn = function(event) {
-    event.preventDefault()
-    var currentX = event.clientX - disX
-    var currentY = event.clientY - disY
-    drag1.style.left = currentX + 'px'
-    drag1.style.top = currentY + 'px'
-    drag1.style.cursor = 'move'
+var listEle = document.getElementById('list')
+function init() {
+  var listArr = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+  var fragMent = document.createDocumentFragment()
+  listArr.forEach(item => {
+    var li = document.createElement('li')
+    li.innerHTML = item
+    fragMent.appendChild(li)
+  })
+  listEle.appendChild(fragMent)
+}
+init()
+function getInsertBeforTarget(targetH, bottomY) {
+  var liList = [].slice.call(listEle.children)
+  var purList = liList.filter(item => item.style.position !== 'absolute')
+  var result = purList.filter(item => {
+    var itemTop = item.offsetTop
+    var itemHeight = item.offsetHeight
+    // console.log('-------it', itemTop)
+    // console.log('-------bottomY', bottomY)
+    // console.log('-------itemTop + itemHeight', itemTop + itemHeight)
+    return itemTop < bottomY && itemTop + itemHeight > bottomY
+  })
+  return (result && result[0]) || purList[purList.length - 1]
+}
+listEle.addEventListener('mousedown', function(e) {
+  var target = e.target
+  var insertTarget = null
+  var originPosition = target.style.position
+  if (target.tagName === 'LI') {
+    var targetH = target.offsetHeight
+    // var disX = e.clientX - target.offsetLeft
+    var disY = e.clientY - target.offsetTop
+    target.style.cursor = 'move'
+    // target.style.left = target.offsetLeft + 'px';
+    // target.style.top = target.offsetTop + 'px';
 
-    var x1 = drag1.offsetLeft
-    var y1 = drag1.offsetTop
-    var dragW = drag1.offsetWidth
-    var dragH = drag1.offsetHeight
-
-    var x2 = drop1.offsetLeft
-    var y2 = drop1.offsetTop
-    var dropW = drop1.offsetWidth
-    var dropH = drop1.offsetHeight
-    isCollide = !(x1 > x2 + dropW || y1 > y2 + dropH || x2 > x1 + dragW || y2 > y1 + dragH)
-    if (isCollide) {
-      drop1.style.backgroundColor = 'yellow'
-      dropValid = !(x1 > x2 + dropW - tagW || y1 > y2 + dropH - tagH || x2 > x1 + dragW - tagW || y2 > y1 + dragH - tagH)
-      console.log('-------dropValid', dropValid)
-    } else {
-      dropValid = false
-      drop1.style.backgroundColor = 'blue'
+    document.addEventListener('mousemove', moveFn)
+    function moveFn(event) {
+      var listH = listEle.clientHeight
+      target.style.position = 'absolute'
+      target.style.opacity = 0.6
+      // var currentX = event.clientX - disX
+      var currentY = event.clientY - disY
+      // console.log('-----currentY', currentY)
+      if (currentY > -targetH && currentY < listH) {
+        target.style.left = 0 + 'px'
+        target.style.top = currentY + 'px'
+        var bottomYTop = target.offsetTop
+        var bottomY = target.offsetTop + targetH
+        insertTarget = getInsertBeforTarget(targetH, bottomY)
+      }
     }
-  }
-  document.addEventListener('mousemove', moveFn)
-  var upFn = function() {
-    drag1.style.cursor = 'default'
-    if (dropValid) {
-      drag1.parentNode.removeChild(drag1)
-      drop1.appendChild(drag1)
-      drag1.style.position = 'static'
+    function upFn() {
+      if (insertTarget) {
+        // console.log('-----insertTarget', insertTarget)
+        target.style.position = originPosition
+        target.style.opacity = 1
+        target.parentNode.insertBefore(target, insertTarget)
+        insertTarget = null
+      }
+      // console.log('-----release')
+      document.removeEventListener('mousemove', moveFn)
+      document.removeEventListener('mouseup', upFn)
+      target.style.cursor = 'default'
     }
-    dropValid = false
-    document.removeEventListener('mousemove', moveFn)
-    document.removeEventListener('mouseup', upFn)
-    // drag1.removeEventListener('mousedown', mouseDownFn)
+    document.addEventListener('mouseup', upFn)
   }
-  document.addEventListener('mouseup', upFn)
 })

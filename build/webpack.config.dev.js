@@ -5,7 +5,7 @@ const utils = require('./utils')
 const multiEntryTools = require('./multi-entries')
 const baseWebpackConfig = require('./webpack.config.base')
 const entries = multiEntryTools.getEntryList(utils.resolve('src/js'), true)
-const htmlWebpackPluginList = multiEntryTools.getHtmlPluginConfigList(utils.resolve('src/html')).map(cfg => new HtmlWebpackPlugin(cfg))
+const htmlWebpackPluginList = multiEntryTools.getHtmlPluginConfigList(utils.resolve('src/html'), true).map(cfg => new HtmlWebpackPlugin(cfg))
 
 module.exports = webpackMerge(baseWebpackConfig, {
   mode: 'development',

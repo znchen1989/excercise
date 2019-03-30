@@ -10,9 +10,16 @@ app.use(
     publicPath: webpackConfig.output.publicPath
   })
 )
-app.use(hotMiddleWare(compiler))
+const hotMiddleWareInstance = hotMiddleWare(compiler)
+app.use(hotMiddleWareInstance)
 
-// app.use(express.static(staticPath))
+compiler.hooks.compilation.tap('MyPlugin', function(compilation) {
+  compilation.hooks.htmlWebpackPluginAfterHtmlProcessing.tapAsync('MyPlugin', function(htmlData, callback) {
+    hotMiddleWareInstance.publish({ action: 'reload' })
+    console.log('--------reload')
+    callback()
+  })
+})
 app.listen(3000, () => {
   console.log('--------listen 30000')
 })
